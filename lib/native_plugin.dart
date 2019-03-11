@@ -28,7 +28,7 @@ class NativePlugin {
     } on PlatformException catch (e) {
       height = "error exception: '${e.message}'.";
     }
-    return "200";
+    return height;
   }
 
 }

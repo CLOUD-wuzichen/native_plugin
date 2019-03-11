@@ -9,12 +9,12 @@ Add
 native_plugin:
       git:
         url: git://github.com/CLOUD-wuzichen/native_plugin.git
-        verson: 0.0.2
+        verson: 0.0.1
 ```
 
 ```bash
 
-native_plugin : ^0.0.2
+native_plugin : ^0.0.1
 
 ```
 to your pubspec.yaml ,and run 
