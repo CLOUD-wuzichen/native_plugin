@@ -1,13 +1,20 @@
-# flutter_statusbar
+# native_plugin
 
-native flutter plugin
+- get status bar height
+- get battery level
 
 ## Getting Started
 Add 
+```
+native_plugin:
+      git:
+        url: git://github.com/CLOUD-wuzichen/native_plugin.git
+        verson: 0.0.2
+```
 
 ```bash
 
-native_plugin : ^0.0.1
+native_plugin : ^0.0.2
 
 ```
 to your pubspec.yaml ,and run 
