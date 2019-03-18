@@ -56,7 +56,7 @@ public class NativePlugin implements MethodCallHandler {
 
     private void finishActivity(Result result) {
         activity.finish();
-        result.success("finish success");
+        result.success("");
     }
 
     private void getBatteryLevel(MethodChannel.Result result) {

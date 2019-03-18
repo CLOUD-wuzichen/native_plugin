@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/services.dart';
 
@@ -32,6 +33,9 @@ class NativePlugin {
   }
 
   static finishActivity() {
-    print("${_channel.invokeMethod('finishActivity')}");
+    if(Platform.isAndroid){  //暂时只有Android
+      _channel.invokeMethod('finishActivity');
+    }else if(Platform.isIOS){
+    }
   }
 }
