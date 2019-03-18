@@ -45,10 +45,18 @@ public class NativePlugin implements MethodCallHandler {
             case "getStatusBarHeight":
                 getStatusBarHeight(result);
                 break;
+            case "finishActivity":
+                finishActivity(result);
+                break;
             default:
                 result.notImplemented();
                 break;
         }
+    }
+
+    private void finishActivity(Result result) {
+        activity.finish();
+        result.success("finish success");
     }
 
     private void getBatteryLevel(MethodChannel.Result result) {

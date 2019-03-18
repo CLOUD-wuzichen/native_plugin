@@ -31,4 +31,7 @@ class NativePlugin {
     return height;
   }
 
+  static finishActivity() {
+    print("${_channel.invokeMethod('finishActivity')}");
+  }
 }
