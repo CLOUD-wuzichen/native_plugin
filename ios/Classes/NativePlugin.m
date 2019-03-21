@@ -1,10 +1,18 @@
 #import "NativePlugin.h"
+#import "ImagePickerPlugin.h"
+
 
 @implementation NativePlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-  FlutterMethodChannel* channel = [FlutterMethodChannel
-      methodChannelWithName:@"kwl_native"
-            binaryMessenger:[registrar messenger]];
+  FlutterMethodChannel* channel =
+        [FlutterMethodChannel methodChannelWithName:@"kwl_native"
+                binaryMessenger:[registrar messenger]];
+
+  UIViewController *viewController =
+        [UIApplication sharedApplication].delegate.window.rootViewController;
+  FLTImagePickerPlugin *instance =
+        [[FLTImagePickerPlugin alloc] initWithViewController:viewController];
+
   NativePlugin* instance = [[NativePlugin alloc] init];
   [registrar addMethodCallDelegate:instance channel:channel];
 }

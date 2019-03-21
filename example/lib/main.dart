@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:native_plugin/native_plugin.dart';
@@ -11,44 +12,83 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _height = "";
-  String _batteryLevel = "";
+  String text = "";
+  File _image;
 
-  Future<void> _getBatteryLevel() async {
+  Future _getBatteryLevel() async {
     String batteryLevel = await NativePlugin.getBatteryLevel();
     if (!mounted) return;
     setState(() {
-      _batteryLevel = batteryLevel;
+      text = batteryLevel;
     });
   }
 
-  Future<void> _getStatusBarHeight() async {
-  String height = await NativePlugin.getStatusBarHeight();
+  Future _getStatusBarHeight() async {
+    String height = await NativePlugin.getStatusBarHeight();
     if (!mounted) return;
     setState(() {
-      _height = height;
+      text = height;
+    });
+  }
+
+  Future _takePhoto() async {
+    String path = await NativePlugin.takePhoto();
+    print("path=$path");
+    setState(() {
+      _image = File(path);
+    });
+  }
+
+  Future _pickPhoto() async {
+    String path = await NativePlugin.pickPhoto();
+    print("path=$path");
+    setState(() {
+      _image = File(path);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
-        home: new Scaffold(
+        home: Scaffold(
             appBar: AppBar(),
-            body: new Center(
-              child: new Column(
-                children: [
-                  Padding(padding: EdgeInsets.only(top: 100)),
-                  RaisedButton(
-                    child: new Text('status bar heigh: $_height'),
-                    onPressed: _getStatusBarHeight,
-                  ),
-                  RaisedButton(
-                    child: Text('battery level: $_batteryLevel'),
-                    onPressed: _getBatteryLevel,
-                  ),
-                ],
-              ),
+            body: Column(
+              children: <Widget>[
+                Padding(padding: EdgeInsets.only(top: 20)),
+                Wrap(
+                  children: [
+                    RaisedButton(
+                      child: new Text('status bar heigh'),
+                      onPressed: _getStatusBarHeight,
+                    ),
+                    RaisedButton(
+                      child: Text('battery level'),
+                      onPressed: _getBatteryLevel,
+                    ),
+                    RaisedButton(
+                      child: Text('take picture'),
+                      onPressed: _takePhoto,
+                    ),
+                    RaisedButton(
+                      child: Text('pick picture'),
+                      onPressed: _pickPhoto,
+                    ),
+                  ],
+                ),
+                Padding(padding: EdgeInsets.only(top: 20)),
+                Text("$text"),
+                Padding(padding: EdgeInsets.only(top: 20)),
+                _buildImage(),
+              ],
             )));
+  }
+
+  Widget _buildImage() {
+    if (_image == null) return Text("no photo");
+    return Image.file(
+      _image,
+      width: 300,
+      height: 300,
+    );
   }
 }

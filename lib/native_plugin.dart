@@ -38,4 +38,31 @@ class NativePlugin {
     }else if(Platform.isIOS){
     }
   }
+
+  static Future<String> pickPhoto() async {
+    String path;
+    if(Platform.isAndroid){  //暂时只有Android
+      try {
+        path = "${await _channel.invokeMethod('pickPhoto')}";
+      } on PlatformException catch (e) {
+        path = "error: ${e.code}--${e.message}--${e.details}";
+      }
+    }else if(Platform.isIOS){
+    }
+    return path;
+  }
+
+  static Future<String> takePhoto() async {
+    String path;
+    if(Platform.isAndroid){  //暂时只有Android
+      try {
+        path = "${await _channel.invokeMethod('takePhoto')}";
+      } on PlatformException catch (e) {
+        path = "error: ${e.code}--${e.message}--${e.details}";
+      }
+    }else if(Platform.isIOS){
+    }
+    return path;
+  }
+
 }

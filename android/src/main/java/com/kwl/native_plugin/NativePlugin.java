@@ -1,11 +1,17 @@
 package com.kwl.native_plugin;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
 import android.os.Build;
+import android.os.Environment;
+
+import com.kwl.native_plugin.image.ImagePickDelegate;
+
+import java.io.File;
 
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -22,18 +28,25 @@ import static android.content.Context.BATTERY_SERVICE;
 public class NativePlugin implements MethodCallHandler {
 
     private Activity activity;
+    private ImagePickDelegate imagePickDelegate;
 
-    public NativePlugin(Activity activity) {
+    public NativePlugin(Activity activity, ImagePickDelegate imagePickDelegate) {
         this.activity = activity;
+        this.imagePickDelegate = imagePickDelegate;
     }
 
     /**
      * Plugin registration.
      */
+    @TargetApi(Build.VERSION_CODES.FROYO)
     public static void registerWith(Registrar registrar) {
-        final MethodChannel channel = new MethodChannel(registrar.messenger(), "kwl_native");
-        channel.setMethodCallHandler(new NativePlugin(registrar.activity()));
+        final File externalFilesDirectory = registrar.activity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        ImagePickDelegate imagePickDelegate = new ImagePickDelegate(registrar.activity(), externalFilesDirectory.getPath());
+        registrar.addActivityResultListener(imagePickDelegate);
+        registrar.addRequestPermissionsResultListener(imagePickDelegate);
 
+        final MethodChannel channel = new MethodChannel(registrar.messenger(), "kwl_native");
+        channel.setMethodCallHandler(new NativePlugin(registrar.activity(), imagePickDelegate));
     }
 
     @Override
@@ -48,10 +61,22 @@ public class NativePlugin implements MethodCallHandler {
             case "finishActivity":
                 finishActivity(result);
                 break;
+            case "takePhoto":
+                takePhoto(result);
+                break;
+            case "pickPhoto":
+                pickPhoto(result);
+                break;
             default:
                 result.notImplemented();
                 break;
         }
+    }
+    private void takePhoto(Result result) {
+        imagePickDelegate.takePhoto(result);
+    }
+    private void pickPhoto(Result result) {
+        imagePickDelegate.pickPhoto(result);
     }
 
     private void finishActivity(Result result) {
@@ -73,7 +98,7 @@ public class NativePlugin implements MethodCallHandler {
         if (batteryLevel != -1) {
             result.success(batteryLevel);
         } else {
-            result.error("UNAVAILABLE", "Battery level not available.", null);
+            result.error("ERROR", "Battery level not available.", null);
         }
     }
 
