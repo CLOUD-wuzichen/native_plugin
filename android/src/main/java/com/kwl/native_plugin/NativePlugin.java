@@ -41,7 +41,7 @@ public class NativePlugin implements MethodCallHandler {
     @TargetApi(Build.VERSION_CODES.FROYO)
     public static void registerWith(Registrar registrar) {
         final File externalFilesDirectory = registrar.activity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        ImagePickDelegate imagePickDelegate = new ImagePickDelegate(registrar.activity(), externalFilesDirectory.getPath());
+        ImagePickDelegate imagePickDelegate = new ImagePickDelegate(registrar.activity(), externalFilesDirectory.getPath()+"/");
         registrar.addActivityResultListener(imagePickDelegate);
         registrar.addRequestPermissionsResultListener(imagePickDelegate);
 

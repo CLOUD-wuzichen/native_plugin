@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.util.Log;
 
 import com.kwl.native_plugin.BuildConfig;
 import com.kwl.native_plugin.utils.URIUtils;
@@ -37,7 +36,7 @@ public class ImagePickDelegate implements PluginRegistry.ActivityResultListener,
     private final String externalFilesDirectory;
 
     private String imagePath;   //拍照路径
-    private Uri uriTempFile;   //裁剪后保存的uri
+    private Uri uri;   //裁剪后保存的uri
     private MethodChannel.Result result;
 
     public ImagePickDelegate(Activity activity, String externalFilesDirectory) {
@@ -57,12 +56,10 @@ public class ImagePickDelegate implements PluginRegistry.ActivityResultListener,
         String SDState = Environment.getExternalStorageState();
         if (SDState.equals(Environment.MEDIA_MOUNTED)) {
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            imagePath = externalFilesDirectory + "_take.jpg";
-            // 根据文件地址创建文件
+            imagePath = externalFilesDirectory + "camera.jpg";
             File file = new File(imagePath);
             if (file.exists()) {
                 if (!file.delete()) {
-
                 }
             }
             // 把文件地址转换成Uri格式
@@ -95,8 +92,15 @@ public class ImagePickDelegate implements PluginRegistry.ActivityResultListener,
         intent.putExtra("outputX", 400);
         intent.putExtra("outputY", 400);
         //裁剪后保存到本地，防止部分机型无法return-data
-        uriTempFile = Uri.parse("file://" + "/" + externalFilesDirectory + "_crop.jpg");
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, uriTempFile);
+        if (this.uri != null) {
+            File file = new File(URIUtils.getImageAbsolutePath(activity, this.uri));
+            if (file.exists()) {
+                if (!file.delete()) {
+                }
+            }
+        }
+        this.uri = Uri.parse("file://" + "/" + externalFilesDirectory + "crop.jpg");
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, this.uri);
         intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -110,26 +114,38 @@ public class ImagePickDelegate implements PluginRegistry.ActivityResultListener,
         if (requestCode == SELECT_PIC_BY_PICK_PHOTO) {
             //选择图库
             if (data == null || data.getData() == null) {
+                clear();
                 return true;
             }
             cropPhoto(data.getData());
         } else if (requestCode == SELECT_PIC_BY_TACK_PHOTO) {
             // 相机直接拍照
-            Uri uri;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                uri = FileProvider.getUriForFile(activity, activity.getPackageName()
-                        + ".fileprovider", new File(imagePath));
+            File file = new File(imagePath);
+            if (file.exists()) {
+                Uri uri;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    uri = FileProvider.getUriForFile(activity, activity.getPackageName()
+                            + ".fileprovider", new File(imagePath));
+                } else {
+                    uri = Uri.fromFile(new File(imagePath));
+                }
+                cropPhoto(uri);
             } else {
-                uri = Uri.fromFile(new File(imagePath));
+                clear();
             }
-            cropPhoto(uri);
         } else if (requestCode == REQUEST_CROP_PHOTO) {
             //裁剪完成
-            String path = URIUtils.getImageAbsolutePath(activity, uriTempFile);
-            result.success(path);
-            result = null;
+            if (null != data && null != uri) {
+                String path = URIUtils.getImageAbsolutePath(activity, uri);
+                result.success(path);
+            }
+            clear();
         }
         return true;
+    }
+
+    private void clear() {
+        result = null;
     }
 
     @Override
