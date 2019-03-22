@@ -1,7 +1,13 @@
 import 'dart:async';
 import 'dart:io';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+
+enum ImageSource {
+  camera,
+
+  gallery,
+}
 
 class NativePlugin {
   static const MethodChannel _channel = const MethodChannel('kwl_native');
@@ -33,36 +39,49 @@ class NativePlugin {
   }
 
   static finishActivity() {
-    if(Platform.isAndroid){  //暂时只有Android
+    if (Platform.isAndroid) {
+      //暂时只有Android
       _channel.invokeMethod('finishActivity');
-    }else if(Platform.isIOS){
-    }
+    } else if (Platform.isIOS) {}
   }
 
+  //选择图库
   static Future<String> pickPhoto() async {
     String path;
-    if(Platform.isAndroid){  //暂时只有Android
+    if (Platform.isAndroid) {
+      //暂时只有Android
       try {
         path = "${await _channel.invokeMethod('pickPhoto')}";
       } on PlatformException catch (e) {
         path = "error: ${e.code}--${e.message}--${e.details}";
       }
-    }else if(Platform.isIOS){
+    } else if (Platform.isIOS) {
+      path = "${await _channel.invokeMethod('takePhoto',
+        <String, dynamic>{
+          'source': 1,
+          'maxWidth': 300,
+          'maxHeight': 300,
+        },
+      )}";
+
     }
     return path;
   }
 
+  //照相
   static Future<String> takePhoto() async {
     String path;
-    if(Platform.isAndroid){  //暂时只有Android
-      try {
-        path = "${await _channel.invokeMethod('takePhoto')}";
-      } on PlatformException catch (e) {
-        path = "error: ${e.code}--${e.message}--${e.details}";
-      }
-    }else if(Platform.isIOS){
+    try {
+      path = "${await _channel.invokeMethod('takePhoto',
+          <String, dynamic>{
+            'source': 0,
+            'maxWidth': 300,
+            'maxHeight': 300,
+          },
+      )}";
+    } on PlatformException catch (e) {
+      path = "error: ${e.code}--${e.message}--${e.details}";
     }
     return path;
   }
-
 }

@@ -12,14 +12,14 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String text = "";
+  String _text = "";
   File _image;
 
   Future _getBatteryLevel() async {
     String batteryLevel = await NativePlugin.getBatteryLevel();
     if (!mounted) return;
     setState(() {
-      text = batteryLevel;
+      _text = batteryLevel;
     });
   }
 
@@ -27,7 +27,7 @@ class _MyAppState extends State<MyApp> {
     String height = await NativePlugin.getStatusBarHeight();
     if (!mounted) return;
     setState(() {
-      text = height;
+      _text = height;
     });
   }
 
@@ -35,6 +35,7 @@ class _MyAppState extends State<MyApp> {
     String path = await NativePlugin.takePhoto();
     print("path=$path");
     setState(() {
+      _text=path;
       _image = File(path);
     });
   }
@@ -66,17 +67,17 @@ class _MyAppState extends State<MyApp> {
                       onPressed: _getBatteryLevel,
                     ),
                     RaisedButton(
-                      child: Text('take picture'),
+                      child: Text('take photo'),
                       onPressed: _takePhoto,
                     ),
                     RaisedButton(
-                      child: Text('pick picture'),
+                      child: Text('pick photo'),
                       onPressed: _pickPhoto,
                     ),
                   ],
                 ),
                 Padding(padding: EdgeInsets.only(top: 20)),
-                Text("$text"),
+                Text("$_text"),
                 Padding(padding: EdgeInsets.only(top: 20)),
                 _buildImage(),
               ],
