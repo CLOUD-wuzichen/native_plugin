@@ -67,11 +67,11 @@ class _MyAppState extends State<MyApp> {
                       onPressed: _getBatteryLevel,
                     ),
                     RaisedButton(
-                      child: Text('take photo'),
+                      child: Text('照相'),
                       onPressed: _takePhoto,
                     ),
                     RaisedButton(
-                      child: Text('pick photo'),
+                      child: Text('图库'),
                       onPressed: _pickPhoto,
                     ),
                   ],
