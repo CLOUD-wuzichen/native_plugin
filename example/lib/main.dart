@@ -48,6 +48,10 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  Future _showToast() async {
+    await NativePlugin.showToast("这是个提示");
+  }
+
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
@@ -73,6 +77,10 @@ class _MyAppState extends State<MyApp> {
                     RaisedButton(
                       child: Text('图库'),
                       onPressed: _pickPhoto,
+                    ),
+                    RaisedButton(
+                      child: Text('提示'),
+                      onPressed: _showToast,
                     ),
                   ],
                 ),

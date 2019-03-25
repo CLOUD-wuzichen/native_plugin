@@ -11,168 +11,179 @@ static const int SOURCE_GALLERY = 1;
 
 @implementation NativePlugin
 {
-  FlutterResult _result;
-  NSDictionary *_arguments;
-  UIImagePickerController *_imagePickerController;
-  UIViewController *_viewController;
+    FlutterResult _result;
+    NSDictionary *_arguments;
+    UIImagePickerController *_imagePickerController;
+    UIViewController *_viewController;
 }
 
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-  FlutterMethodChannel* channel =
-        [FlutterMethodChannel methodChannelWithName:@"kwl_native"
-                binaryMessenger:[registrar messenger]];
+    FlutterMethodChannel* channel =
+    [FlutterMethodChannel methodChannelWithName:@"kwl_native"
+                                binaryMessenger:[registrar messenger]];
 
- UIViewController *viewController =
-      [UIApplication sharedApplication].delegate.window.rootViewController;
-  NativePlugin* instance = [[NativePlugin alloc] initWithViewController:viewController];
-  [registrar addMethodCallDelegate:instance channel:channel];
+    UIViewController *viewController =
+    [UIApplication sharedApplication].delegate.window.rootViewController;
+
+    NativePlugin* instance = [[NativePlugin alloc] initWithViewController:viewController];
+    [registrar addMethodCallDelegate:instance channel:channel];
 }
 - (instancetype)initWithViewController:(UIViewController *)viewController {
-  self = [super init];
-  if (self) {
-    _viewController = viewController;
-    _imagePickerController = [[UIImagePickerController alloc] init];
-  }
-  return self;
+    self = [super init];
+    if (self) {
+        _viewController = viewController;
+        _imagePickerController = [[UIImagePickerController alloc] init];
+    }
+    return self;
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-  if ([@"getStatusBarHeight" isEqualToString:call.method]) {
-    result( @(  [[UIApplication sharedApplication] statusBarFrame].size.height  ) );
-  }else if ([@"getBatteryLevel" isEqualToString:call.method]) {
-       int batteryLevel = [self getBatteryLevel];
-       if (batteryLevel == -1) {
-       result([FlutterError errorWithCode:@"UNAVAILABLE"
-                                         message:@"电池信息不可用"
-                                         details:nil]);
-       }else {
-         result(@(batteryLevel));
-       }
-  }else if ([@"takePhoto" isEqualToString:call.method]) {
-       _imagePickerController.modalPresentationStyle = UIModalPresentationCurrentContext;
-       _imagePickerController.delegate = self;
-       _imagePickerController.mediaTypes = @[ (NSString *)kUTTypeImage ];
+    if ([@"showToast" isEqualToString:call.method]) {
+        _result = result;
+        _arguments = call.arguments;
+        NSString *msg = [_arguments objectForKey:@"msg"];
+        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"" message:msg preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *act1=[UIAlertAction actionWithTitle:@"知道了" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
 
-       _result = result;
-       _arguments = call.arguments;
+        }];
+        [alertController addAction:act1];
+        [_viewController presentViewController:alertController animated:YES completion:nil];
+    }else if ([@"getStatusBarHeight" isEqualToString:call.method]) {
+        result( @(  [[UIApplication sharedApplication] statusBarFrame].size.height  ) );
+    }else if ([@"getBatteryLevel" isEqualToString:call.method]) {
+        int batteryLevel = [self getBatteryLevel];
+        if (batteryLevel == -1) {
+            result([FlutterError errorWithCode:@"UNAVAILABLE"
+                                       message:@"电池信息不可用"
+                                       details:nil]);
+        }else {
+            result(@(batteryLevel));
+        }
+    }else if ([@"takePhoto" isEqualToString:call.method]) {
+        _imagePickerController.modalPresentationStyle = UIModalPresentationCurrentContext;
+        _imagePickerController.delegate = self;
+        _imagePickerController.mediaTypes = @[ (NSString *)kUTTypeImage ];
 
-       int imageSource = [[_arguments objectForKey:@"source"] intValue];
+        _result = result;
+        _arguments = call.arguments;
 
-       switch (imageSource) {
-         case SOURCE_CAMERA:
-           [self showCamera];
-           break;
-         case SOURCE_GALLERY:
-           [self showPhotoLibrary];
-           break;
-         default:
-           result([FlutterError errorWithCode:@"invalid_source"
-                                      message:@"Invalid image source."
-                                      details:nil]);
-           break;
-       }
-     }
-  else {
-    result(FlutterMethodNotImplemented);
-  }
+        int imageSource = [[_arguments objectForKey:@"source"] intValue];
+
+        switch (imageSource) {
+            case SOURCE_CAMERA:
+                [self showCamera];
+                break;
+            case SOURCE_GALLERY:
+                [self showPhotoLibrary];
+                break;
+            default:
+                result([FlutterError errorWithCode:@"invalid_source"
+                                           message:@"Invalid image source."
+                                           details:nil]);
+                break;
+        }
+    }
+    else {
+        result(FlutterMethodNotImplemented);
+    }
 }
 
 - (int)getBatteryLevel {
-  UIDevice* device = UIDevice.currentDevice;
-  device.batteryMonitoringEnabled = YES;
-  if (device.batteryState == UIDeviceBatteryStateUnknown) {
-    return -1;
-  } else {
-    return (int)(device.batteryLevel * 100);
-  }
+    UIDevice* device = UIDevice.currentDevice;
+    device.batteryMonitoringEnabled = YES;
+    if (device.batteryState == UIDeviceBatteryStateUnknown) {
+        return -1;
+    } else {
+        return (int)(device.batteryLevel * 100);
+    }
 }
 
 - (void)showCamera {
-  // Camera is not available on simulators
-  if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
-    _imagePickerController.sourceType = UIImagePickerControllerSourceTypeCamera;
-    [_viewController presentViewController:_imagePickerController animated:YES completion:nil];
-  } else {
-    [[[UIAlertView alloc] initWithTitle:@"Error"
-                                message:@"Camera not available."
-                               delegate:nil
-                      cancelButtonTitle:@"OK"
-                      otherButtonTitles:nil] show];
-  }
+    // Camera is not available on simulators
+    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+        _imagePickerController.sourceType = UIImagePickerControllerSourceTypeCamera;
+        [_viewController presentViewController:_imagePickerController animated:YES completion:nil];
+    } else {
+        [[[UIAlertView alloc] initWithTitle:@"Error"
+                                    message:@"Camera not available."
+                                   delegate:nil
+                          cancelButtonTitle:@"OK"
+                          otherButtonTitles:nil] show];
+    }
 }
 
 - (void)showPhotoLibrary {
-  // No need to check if SourceType is available. It always is.
-  _imagePickerController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-  [_viewController presentViewController:_imagePickerController animated:YES completion:nil];
+    // No need to check if SourceType is available. It always is.
+    _imagePickerController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    [_viewController presentViewController:_imagePickerController animated:YES completion:nil];
 }
 
 - (void)imagePickerController:(UIImagePickerController *)picker
-    didFinishPickingMediaWithInfo:(NSDictionary<NSString *, id> *)info {
-  NSURL *videoURL = [info objectForKey:UIImagePickerControllerMediaURL];
-  UIImage *image = [info objectForKey:UIImagePickerControllerEditedImage];
-  [_imagePickerController dismissViewControllerAnimated:YES completion:nil];
-  // The method dismissViewControllerAnimated does not immediately prevent further
-  // didFinishPickingMediaWithInfo invocations. A nil check is necessary to prevent below code to
-  // be unwantly executed multiple times and cause a crash.
-  if (!_result) {
-    return;
-  }
-  if (videoURL != nil) {
-    NSData *data = [NSData dataWithContentsOfURL:videoURL];
-    NSString *guid = [[NSProcessInfo processInfo] globallyUniqueString];
-    NSString *tmpFile = [NSString stringWithFormat:@"image_picker_%@.MOV", guid];
-    NSString *tmpDirectory = NSTemporaryDirectory();
-    NSString *tmpPath = [tmpDirectory stringByAppendingPathComponent:tmpFile];
+didFinishPickingMediaWithInfo:(NSDictionary<NSString *, id> *)info {
+    NSURL *videoURL = [info objectForKey:UIImagePickerControllerMediaURL];
+    UIImage *image = [info objectForKey:UIImagePickerControllerEditedImage];
+    [_imagePickerController dismissViewControllerAnimated:YES completion:nil];
+    // The method dismissViewControllerAnimated does not immediately prevent further
+    // didFinishPickingMediaWithInfo invocations. A nil check is necessary to prevent below code to
+    // be unwantly executed multiple times and cause a crash.
+    if (!_result) {
+        return;
+    }
+    if (videoURL != nil) {
+        NSData *data = [NSData dataWithContentsOfURL:videoURL];
+        NSString *guid = [[NSProcessInfo processInfo] globallyUniqueString];
+        NSString *tmpFile = [NSString stringWithFormat:@"image_picker_%@.MOV", guid];
+        NSString *tmpDirectory = NSTemporaryDirectory();
+        NSString *tmpPath = [tmpDirectory stringByAppendingPathComponent:tmpFile];
 
-    if ([[NSFileManager defaultManager] createFileAtPath:tmpPath contents:data attributes:nil]) {
-      _result(tmpPath);
+        if ([[NSFileManager defaultManager] createFileAtPath:tmpPath contents:data attributes:nil]) {
+            _result(tmpPath);
+        } else {
+            _result([FlutterError errorWithCode:@"create_error"
+                                        message:@"Temporary file could not be created"
+                                        details:nil]);
+        }
     } else {
-      _result([FlutterError errorWithCode:@"create_error"
-                                  message:@"Temporary file could not be created"
-                                  details:nil]);
-    }
-  } else {
-    if (image == nil) {
-      image = [info objectForKey:UIImagePickerControllerOriginalImage];
-    }
-    image = [self normalizedImage:image];
+        if (image == nil) {
+            image = [info objectForKey:UIImagePickerControllerOriginalImage];
+        }
+        image = [self normalizedImage:image];
 
-    NSNumber *maxWidth = [_arguments objectForKey:@"maxWidth"];
-    NSNumber *maxHeight = [_arguments objectForKey:@"maxHeight"];
+        NSNumber *maxWidth = [_arguments objectForKey:@"maxWidth"];
+        NSNumber *maxHeight = [_arguments objectForKey:@"maxHeight"];
 
-    if (maxWidth != (id)[NSNull null] || maxHeight != (id)[NSNull null]) {
-      image = [self scaledImage:image maxWidth:maxWidth maxHeight:maxHeight];
-    }
+        if (maxWidth != (id)[NSNull null] || maxHeight != (id)[NSNull null]) {
+            image = [self scaledImage:image maxWidth:maxWidth maxHeight:maxHeight];
+        }
 
-    BOOL saveAsPNG = [self hasAlpha:image];
-    NSData *data =
+        BOOL saveAsPNG = [self hasAlpha:image];
+        NSData *data =
         saveAsPNG ? UIImagePNGRepresentation(image) : UIImageJPEGRepresentation(image, 1.0);
-    NSString *fileExtension = saveAsPNG ? @"image_picker_%@.png" : @"image_picker_%@.jpg";
-    NSString *guid = [[NSProcessInfo processInfo] globallyUniqueString];
-    NSString *tmpFile = [NSString stringWithFormat:fileExtension, guid];
-    NSString *tmpDirectory = NSTemporaryDirectory();
-    NSString *tmpPath = [tmpDirectory stringByAppendingPathComponent:tmpFile];
+        NSString *fileExtension = saveAsPNG ? @"image_picker_%@.png" : @"image_picker_%@.jpg";
+        NSString *guid = [[NSProcessInfo processInfo] globallyUniqueString];
+        NSString *tmpFile = [NSString stringWithFormat:fileExtension, guid];
+        NSString *tmpDirectory = NSTemporaryDirectory();
+        NSString *tmpPath = [tmpDirectory stringByAppendingPathComponent:tmpFile];
 
-    if ([[NSFileManager defaultManager] createFileAtPath:tmpPath contents:data attributes:nil]) {
-      _result(tmpPath);
-    } else {
-      _result([FlutterError errorWithCode:@"create_error"
-                                  message:@"Temporary file could not be created"
-                                  details:nil]);
+        if ([[NSFileManager defaultManager] createFileAtPath:tmpPath contents:data attributes:nil]) {
+            _result(tmpPath);
+        } else {
+            _result([FlutterError errorWithCode:@"create_error"
+                                        message:@"Temporary file could not be created"
+                                        details:nil]);
+        }
     }
-  }
 
-  _result = nil;
-  _arguments = nil;
+    _result = nil;
+    _arguments = nil;
 }
 
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
-  [_imagePickerController dismissViewControllerAnimated:YES completion:nil];
-  _result(nil);
+    [_imagePickerController dismissViewControllerAnimated:YES completion:nil];
+    _result(nil);
 
-  _result = nil;
-  _arguments = nil;
+    _result = nil;
+    _arguments = nil;
 }
 
 // The way we save images to the tmp dir currently throws away all EXIF data
@@ -181,72 +192,73 @@ static const int SOURCE_GALLERY = 1;
 // image data.
 // TODO(goderbauer): investigate how to preserve EXIF data.
 - (UIImage *)normalizedImage:(UIImage *)image {
-  if (image.imageOrientation == UIImageOrientationUp) return image;
+    if (image.imageOrientation == UIImageOrientationUp) return image;
 
-  UIGraphicsBeginImageContextWithOptions(image.size, NO, image.scale);
-  [image drawInRect:(CGRect){0, 0, image.size}];
-  UIImage *normalizedImage = UIGraphicsGetImageFromCurrentImageContext();
-  UIGraphicsEndImageContext();
-  return normalizedImage;
+    UIGraphicsBeginImageContextWithOptions(image.size, NO, image.scale);
+    [image drawInRect:(CGRect){0, 0, image.size}];
+    UIImage *normalizedImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return normalizedImage;
 }
 
 - (UIImage *)scaledImage:(UIImage *)image
                 maxWidth:(NSNumber *)maxWidth
                maxHeight:(NSNumber *)maxHeight {
-  double originalWidth = image.size.width;
-  double originalHeight = image.size.height;
+    double originalWidth = image.size.width;
+    double originalHeight = image.size.height;
 
-  bool hasMaxWidth = maxWidth != (id)[NSNull null];
-  bool hasMaxHeight = maxHeight != (id)[NSNull null];
+    bool hasMaxWidth = maxWidth != (id)[NSNull null];
+    bool hasMaxHeight = maxHeight != (id)[NSNull null];
 
-  double width = hasMaxWidth ? MIN([maxWidth doubleValue], originalWidth) : originalWidth;
-  double height = hasMaxHeight ? MIN([maxHeight doubleValue], originalHeight) : originalHeight;
+    double width = hasMaxWidth ? MIN([maxWidth doubleValue], originalWidth) : originalWidth;
+    double height = hasMaxHeight ? MIN([maxHeight doubleValue], originalHeight) : originalHeight;
 
-  bool shouldDownscaleWidth = hasMaxWidth && [maxWidth doubleValue] < originalWidth;
-  bool shouldDownscaleHeight = hasMaxHeight && [maxHeight doubleValue] < originalHeight;
-  bool shouldDownscale = shouldDownscaleWidth || shouldDownscaleHeight;
+    bool shouldDownscaleWidth = hasMaxWidth && [maxWidth doubleValue] < originalWidth;
+    bool shouldDownscaleHeight = hasMaxHeight && [maxHeight doubleValue] < originalHeight;
+    bool shouldDownscale = shouldDownscaleWidth || shouldDownscaleHeight;
 
-  if (shouldDownscale) {
-    double downscaledWidth = floor((height / originalHeight) * originalWidth);
-    double downscaledHeight = floor((width / originalWidth) * originalHeight);
+    if (shouldDownscale) {
+        double downscaledWidth = floor((height / originalHeight) * originalWidth);
+        double downscaledHeight = floor((width / originalWidth) * originalHeight);
 
-    if (width < height) {
-      if (!hasMaxWidth) {
-        width = downscaledWidth;
-      } else {
-        height = downscaledHeight;
-      }
-    } else if (height < width) {
-      if (!hasMaxHeight) {
-        height = downscaledHeight;
-      } else {
-        width = downscaledWidth;
-      }
-    } else {
-      if (originalWidth < originalHeight) {
-        width = downscaledWidth;
-      } else if (originalHeight < originalWidth) {
-        height = downscaledHeight;
-      }
+        if (width < height) {
+            if (!hasMaxWidth) {
+                width = downscaledWidth;
+            } else {
+                height = downscaledHeight;
+            }
+        } else if (height < width) {
+            if (!hasMaxHeight) {
+                height = downscaledHeight;
+            } else {
+                width = downscaledWidth;
+            }
+        } else {
+            if (originalWidth < originalHeight) {
+                width = downscaledWidth;
+            } else if (originalHeight < originalWidth) {
+                height = downscaledHeight;
+            }
+        }
     }
-  }
 
-  UIGraphicsBeginImageContextWithOptions(CGSizeMake(width, height), NO, 1.0);
-  [image drawInRect:CGRectMake(0, 0, width, height)];
+    UIGraphicsBeginImageContextWithOptions(CGSizeMake(width, height), NO, 1.0);
+    [image drawInRect:CGRectMake(0, 0, width, height)];
 
-  UIImage *scaledImage = UIGraphicsGetImageFromCurrentImageContext();
-  UIGraphicsEndImageContext();
+    UIImage *scaledImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
 
-  return scaledImage;
+    return scaledImage;
 }
 
 // Returns true if the image has an alpha layer
 - (BOOL)hasAlpha:(UIImage *)image {
-  CGImageAlphaInfo alpha = CGImageGetAlphaInfo(image.CGImage);
-  return (alpha == kCGImageAlphaFirst || alpha == kCGImageAlphaLast ||
-          alpha == kCGImageAlphaPremultipliedFirst || alpha == kCGImageAlphaPremultipliedLast);
+    CGImageAlphaInfo alpha = CGImageGetAlphaInfo(image.CGImage);
+    return (alpha == kCGImageAlphaFirst || alpha == kCGImageAlphaLast ||
+            alpha == kCGImageAlphaPremultipliedFirst || alpha == kCGImageAlphaPremultipliedLast);
 }
 
 
 
 @end
+

@@ -49,14 +49,14 @@ class NativePlugin {
         path = "error: ${e.code}--${e.message}--${e.details}";
       }
     } else if (Platform.isIOS) {
-      path = "${await _channel.invokeMethod('takePhoto',
+      path = "${await _channel.invokeMethod(
+        'takePhoto',
         <String, dynamic>{
           'source': 1,
           'maxWidth': 300,
           'maxHeight': 300,
         },
       )}";
-
     }
     return path;
   }
@@ -65,16 +65,30 @@ class NativePlugin {
   static Future<String> takePhoto() async {
     String path;
     try {
-      path = "${await _channel.invokeMethod('takePhoto',
-          <String, dynamic>{
-            'source': 0,
-            'maxWidth': 300,
-            'maxHeight': 300,
-          },
+      path = "${await _channel.invokeMethod(
+        'takePhoto',
+        <String, dynamic>{
+          'source': 0,
+          'maxWidth': 300,
+          'maxHeight': 300,
+        },
       )}";
     } on PlatformException catch (e) {
       path = "error: ${e.code}--${e.message}--${e.details}";
     }
     return path;
+  }
+
+  static Future showToast(String msg) async {
+    try {
+      await _channel.invokeMethod(
+        'showToast',
+        <String, dynamic>{
+          'msg': msg,
+        },
+      );
+    } on PlatformException catch (e) {
+      print("error: ${e.code}--${e.message}--${e.details}");
+    }
   }
 }
