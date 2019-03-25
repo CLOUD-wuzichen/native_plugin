@@ -8,7 +8,9 @@ import android.content.IntentFilter;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
+import android.view.Gravity;
 
+import com.hjq.toast.ToastUtils;
 import com.kwl.native_plugin.image.ImagePickDelegate;
 
 import java.io.File;
@@ -33,6 +35,8 @@ public class NativePlugin implements MethodCallHandler {
     public NativePlugin(Activity activity, ImagePickDelegate imagePickDelegate) {
         this.activity = activity;
         this.imagePickDelegate = imagePickDelegate;
+        ToastUtils.init(activity.getApplication());
+        ToastUtils.setGravity(Gravity.BOTTOM, 0, 150);
     }
 
     /**
@@ -41,7 +45,7 @@ public class NativePlugin implements MethodCallHandler {
     @TargetApi(Build.VERSION_CODES.FROYO)
     public static void registerWith(Registrar registrar) {
         final File externalFilesDirectory = registrar.activity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        ImagePickDelegate imagePickDelegate = new ImagePickDelegate(registrar.activity(), externalFilesDirectory.getPath()+"/");
+        ImagePickDelegate imagePickDelegate = new ImagePickDelegate(registrar.activity(), externalFilesDirectory.getPath() + "/");
         registrar.addActivityResultListener(imagePickDelegate);
         registrar.addRequestPermissionsResultListener(imagePickDelegate);
 
@@ -67,14 +71,27 @@ public class NativePlugin implements MethodCallHandler {
             case "pickPhoto":
                 pickPhoto(result);
                 break;
+            case "showToast":
+                showToast(call);
+                break;
             default:
                 result.notImplemented();
                 break;
         }
     }
+
+    private void showToast(MethodCall call) {
+        String msg = call.argument("msg");
+        if (msg == null) {
+            msg = "";
+        }
+        ToastUtils.show(msg);
+    }
+
     private void takePhoto(Result result) {
         imagePickDelegate.takePhoto(result);
     }
+
     private void pickPhoto(Result result) {
         imagePickDelegate.pickPhoto(result);
     }
