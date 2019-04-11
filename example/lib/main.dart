@@ -15,12 +15,19 @@ class _MyAppState extends State<MyApp> {
   String _text = "";
   File _image;
 
-  Future _getBatteryLevel() async {
-    String batteryLevel = await NativePlugin.getBatteryLevel();
-    if (!mounted) return;
-    setState(() {
-      _text = batteryLevel;
+  _getBatteryLevel() {
+    NativePlugin.getBatteryLevel().then((t) {
+      if (!mounted) return;
+      setState(() {
+        _text = t;
+      });
     });
+    ////上面异步，下面阻塞
+//    String batteryLevel = await NativePlugin.getBatteryLevel();
+//    if (!mounted) return;
+//    setState(() {
+//      _text = batteryLevel;
+//    });
   }
 
   Future _getStatusBarHeight() async {
@@ -35,14 +42,13 @@ class _MyAppState extends State<MyApp> {
     String path = await NativePlugin.takePhoto();
     print("path=$path");
     setState(() {
-      _text=path;
+      _text = path;
       _image = File(path);
     });
   }
 
-  Future _pickPhoto() async {
+  Future _pickPhoto() async{
     String path = await NativePlugin.pickPhoto();
-    print("path=$path");
     setState(() {
       _image = File(path);
     });
