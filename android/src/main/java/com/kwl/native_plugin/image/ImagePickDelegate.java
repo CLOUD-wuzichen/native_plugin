@@ -7,13 +7,13 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 
 import com.kwl.native_plugin.BuildConfig;
 import com.kwl.native_plugin.utils.URIUtils;
 
 import java.io.File;
 
-import androidx.core.content.FileProvider;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
 

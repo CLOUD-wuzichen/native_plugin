@@ -1,6 +1,7 @@
 package com.kwl.native_plugin.utils;
 
-import androidx.core.content.FileProvider;
+
+import android.support.v4.content.FileProvider;
 
 public class NativeFileProvider extends FileProvider {
 

@@ -53,8 +53,8 @@ class NativePlugin {
         'takePhoto',
         <String, dynamic>{
           'source': 1,
-          'maxWidth': 300,
-          'maxHeight': 300,
+          'maxWidth': 320,
+          'maxHeight': 320,
         },
       )}";
     }
